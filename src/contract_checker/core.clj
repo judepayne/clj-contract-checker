@@ -37,20 +37,28 @@
 (defn get-node
   "takes a nested clojure map, representing json and a path and returns the node at the path."
   [js path]
-  (println (first path) (rest path))
   (if (empty? path)
     js
     (get-node ((first path) js) (rest path))))
 
 ;; a ruleset is a collection of rules to be applied to a pair of nodes
 
-(defn type-same
+(defn same-type-rule
   "Do both nodes have a type and the types are the same."
-  [node1 node2]
-  (if
-      (and (not (nil? (:type node1)))
-           (= (:type node1) (:type node2)))
-    nil
-    {:path 
-     :rule "type-same"
-     :description "types should both not be nil and must be the same."}))
+  [consumer-node producer-node]
+  (let [con-type (:type consumer-node)
+        prod-type (:type producer-node)]
+    (if
+        (and (not (nil? con-type))
+             (= con-type prod-type))
+      nil
+      {:rule "same-type-rule"
+       :description (str
+                     "conumer type: " con-type " is not equal to producer type " prod-type
+                     ". Types should both not be nil and must be the same.")})))
+
+
+(def apply-rules
+  [consumer-node producer-node path error]
+  ;; TODO
+)
