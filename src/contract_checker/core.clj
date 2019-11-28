@@ -17,7 +17,7 @@
 (defn has-children?
   "does the node have children?"
   [js]
-  (not (nil? (:properties js))))
+  (not (nil? (children js))))
 
 
 ;; design thoughts
@@ -41,24 +41,36 @@
     js
     (get-node ((first path) js) (rest path))))
 
-;; a ruleset is a collection of rules to be applied to a pair of nodes
 
-(defn same-type-rule
-  "Do both nodes have a type and the types are the same."
+;; this is an example rule that we'll use as a default later
+(defn default-rule
+  "Checks that the nodes are the same."
   [consumer-node producer-node]
-  (let [con-type (:type consumer-node)
-        prod-type (:type producer-node)]
-    (if
-        (and (not (nil? con-type))
-             (= con-type prod-type))
-      nil
-      {:rule "same-type-rule"
-       :description (str
-                     "conumer type: " con-type " is not equal to producer type " prod-type
-                     ". Types should both not be nil and must be the same.")})))
+  (if (= consumer-node producer-node)
+    nil
+    {:rule "default-rule"
+     :severity "major"
+     :description (str "consumer node: " consumer-node " and producer node: " producer-node
+                       " are not the same!")}))
 
 
-(def apply-rules
-  [consumer-node producer-node path error]
-  ;; TODO
-)
+(defn apply-rules
+  [consumer-node producer-js path error rules]
+  (let [producer-node (get-node producer-js path)]
+    (if (nil? producer-node)
+      ;; no corresponding producer-node. add an error
+      (conj error {:path path
+                   :rule "no corresponding producer node"
+                   :description (str "no corresponding producer node found!")})
+      ;; else e have a producer-node. apply all rules an collect any errors
+      (reduce
+       (fn [err current-rule]
+         (let [result (current-rule consumer-node producer-node)]
+           (if result
+             (conj err (assoc result :path path))
+             err)))
+       error
+       rules))))
+
+
+
