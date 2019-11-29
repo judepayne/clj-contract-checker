@@ -2,19 +2,28 @@
   (:require [clojure.data.json :as json]))
 
 
-(defn node
+(defn- node
   "gets the map of keys & values that represent the node"
   [js]
- (dissoc js :properties))
+ (dissoc js :properties :items))
 
 
-(defn children
+(defn- children
   "gets the children from the node."
   [js]
-  (:properties js))
+  (into {} (remove nil? (concat (:items js) (:properties js)))))
 
 
-(defn has-children?
+(defn- children-type
+  "provides the key of the children."
+  [js]
+  (cond
+    (not (nil? (:properties js))) :properties
+    (not (nil? (:items js)))      :items
+    :else                         nil))
+
+
+(defn- has-children?
   "does the node have children?"
   [js]
   (not (nil? (children js))))
@@ -34,7 +43,7 @@
 
 ;; path is defined as a vector of keywords that are applied in sequence to navigate down from the root node. e.g. [:properties :firstName]
 
-(defn get-node
+(defn- get-node
   "takes a nested clojure map, representing json and a path and returns the node at the path."
   [js path]
   (if (empty? path)
@@ -43,7 +52,7 @@
 
 
 ;; this is an example rule that we'll use as a default later
-(defn default-rule
+(defn- default-rule
   "Checks that the nodes are the same."
   [consumer-node producer-node]
   (if (= consumer-node producer-node)
@@ -54,7 +63,7 @@
                        " are not the same!")}))
 
 
-(defn apply-rules
+(defn- apply-rules
   [consumer-node producer-js path error rules]
   (let [producer-node (get-node producer-js path)]
     (if (nil? producer-node)
@@ -73,4 +82,30 @@
        rules))))
 
 
+(defn check-contract-impl
+  ""
+  [consumer-js producer-js path error rules]
+  (let [chdn (children consumer-js)
+        chdn-type (children-type consumer-js)]
+    (if (empty? chdn)
+      (let [new-error (apply-rules consumer-js producer-js path error rules)]
+        new-error)
+      (let [new-error (apply-rules consumer-js producer-js path error rules)]
+        (conj error
+              (mapcat
+               (fn [[k v]]
+                 (check-contract-impl
+                  v
+                  producer-js
+                  (conj path chdn-type k)
+                  new-error
+                  rules))
+               chdn))))))
 
+
+
+
+(defn check-contract
+  ""
+  [consumer-js producer-js & {:keys  [rules] :or {rules [default-rule]}}]
+  (check-contract-impl consumer-js producer-js [] [] rules))
