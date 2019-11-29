@@ -2,34 +2,13 @@
   (:require [clojure.data.json :as json]))
 
 
-(defn- node
-  "gets the map of keys & values that represent the node"
-  [js]
- (dissoc js :properties :items))
+;; ********************* Notes on the design ******************
+;; Json-schema is a tree of nested maps. Note that only contained maps are used to indicate
+;; lower/ children levels.
 
-
-(defn- children
-  "gets the children from the node."
-  [js]
-  (into {} (remove nil? (concat (:items js) (:properties js)))))
-
-
-(defn- children-type
-  "provides the key of the children."
-  [js]
-  (cond
-    (not (nil? (:properties js))) :properties
-    (not (nil? (:items js)))      :items
-    :else                         nil))
-
-
-(defn- has-children?
-  "does the node have children?"
-  [js]
-  (not (nil? (children js))))
-
-
-;; path is defined as a vector of keywords that are applied in sequence to navigate down from the root node. e.g. [:properties :firstName]
+;; We define a *path* (down through the nested map) as a vector of keywords which are applied
+;; in sequence to navigate down from the root node. e.g. [:properties :firstName]
+;; ************************************************************
 
 (defn- get-node
   "takes a nested clojure map, representing json and a path and returns the node at the path."
@@ -60,42 +39,45 @@
 
 
 (defn- apply-rules
-  [consumer-node producer-js path error rules]
+  [consumer-node-pruned producer-js keys-to-remove path error rules]
   (let [producer-node (get-node producer-js path)]
     (if (nil? producer-node)
       ;; no corresponding producer-node. add an error
       (conj error {:path path
                    :rule "no corresponding producer node"
                    :description (str "no corresponding producer node found!")})
-      ;; else e have a producer-node. apply all rules an collect any errors
-      (reduce
-       (fn [err current-rule]
-         (let [result (current-rule consumer-node producer-node)]
-           (if result
-             (conj err (assoc result :path path))
-             err)))
-       error
-       rules))))
+      ;; else we have a producer-node. prune it of any mapentries that lead to
+      ;; children levels, before applying all rules and collecting the errors
+      (let [producer-node-pruned (apply dissoc producer-node keys-to-remove)]
+        (reduce
+         (fn [err current-rule]
+           (let [result (current-rule consumer-node-pruned producer-node-pruned)]
+             (if result
+               (conj err (assoc result :path path))
+               err)))
+         error
+         rules)))))
 
 
-(defn- check-contract-impl
-  "The implementation of check-contract."
-  [consumer-js producer-js path error rules]
-  (let [chdn (children consumer-js)
-        chdn-type (children-type consumer-js)]
-    (if (empty? chdn)
-      (apply-rules consumer-js producer-js path error rules)
-      (let [new-error (apply-rules consumer-js producer-js path error rules)]
-        (concat error
+(defn- recurse-down
+  "The implementation of check-contract"
+  [m producer-js path error rules]
+  (let [next-gen         (filter
+                          (fn [[k v]] (map? v))  ;; the mapentries that lead to children levels
+                          m)
+        keys-to-remove    (map first next-gen)  ;; the keys of those mapentries
+        cur-node          (apply dissoc m keys-to-remove)  ;; remove them from cur-node...
+                          ;; ...before checking for errors if cur-node is not empty
+        new-error         (if (empty? cur-node)
+                            error
+                            (apply-rules cur-node producer-js keys-to-remove path error rules))]
+    (if (empty? next-gen)
+      (conj error new-error)
+      (concat error
               (mapcat
                (fn [[k v]]
-                 (check-contract-impl
-                  v
-                  producer-js
-                  (conj path chdn-type k)
-                  new-error
-                  rules))
-               chdn))))))
+                 (recurse-down v producer-js (conj path k) new-error rules))
+               next-gen)))))
 
 
 (defn check-contract
@@ -104,4 +86,4 @@
    errors or nil if there are none. If a corresponding node cannot be found in
    the producer contract, an error is added."
   [consumer-js producer-js & {:keys  [rules] :or {rules [default-rule]}}]
-  (distinct (check-contract-impl consumer-js producer-js [] [] rules)))
+  (distinct (flatten (recurse-down consumer-js producer-js [] [] rules))))
