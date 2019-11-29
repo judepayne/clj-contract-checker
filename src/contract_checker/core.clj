@@ -29,18 +29,6 @@
   (not (nil? (children js))))
 
 
-;; design thoughts
-;; check-contract function - takes a producer schema, a consumer schema and ruleset
-;; return: nil if no errors or a collection of errors found
-;; how it should work:
-;; start with the consumer contract (as a tree - nested clojure maps) and an empty error
-;; collection. We recurse down through the consumer tree, for each consumer node:
-;; -- find a match/ identify if we have the node in the producer tree. (check if we have keyword)
-;;  -- if not, add an error and return
-;;  -- if yes, check the ruleset - accumulate any errors
-;;         check if has children. return if not or
-;;         recurse into children
-
 ;; path is defined as a vector of keywords that are applied in sequence to navigate down from the root node. e.g. [:properties :firstName]
 
 (defn- get-node
@@ -63,6 +51,14 @@
                        " are not the same!")}))
 
 
+(defn- fail-rule
+  "Always fails."
+  [consumer-node producer-node]
+  {:rule "fail-rule"
+   :severity "minor"
+   :description "I failed!"})
+
+
 (defn- apply-rules
   [consumer-node producer-js path error rules]
   (let [producer-node (get-node producer-js path)]
@@ -82,16 +78,15 @@
        rules))))
 
 
-(defn check-contract-impl
-  ""
+(defn- check-contract-impl
+  "The implementation of check-contract."
   [consumer-js producer-js path error rules]
   (let [chdn (children consumer-js)
         chdn-type (children-type consumer-js)]
     (if (empty? chdn)
+      (apply-rules consumer-js producer-js path error rules)
       (let [new-error (apply-rules consumer-js producer-js path error rules)]
-        new-error)
-      (let [new-error (apply-rules consumer-js producer-js path error rules)]
-        (conj error
+        (concat error
               (mapcat
                (fn [[k v]]
                  (check-contract-impl
@@ -103,9 +98,10 @@
                chdn))))))
 
 
-
-
 (defn check-contract
-  ""
+  "Checks all specified rules against each node in the consumer contract vs
+   the corresponding node in the produce contract and returns a collection of
+   errors or nil if there are none. If a corresponding node cannot be found in
+   the producer contract, an error is added."
   [consumer-js producer-js & {:keys  [rules] :or {rules [default-rule]}}]
-  (check-contract-impl consumer-js producer-js [] [] rules))
+  (distinct (check-contract-impl consumer-js producer-js [] [] rules)))
