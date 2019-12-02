@@ -2,20 +2,26 @@
   (:require [clojure.data.json :as json]))
 
 
-;; ********************* Notes on the design ******************
-;; Json-schema is a tree of nested maps. Note that only contained maps are used to indicate
-;; lower/ children levels.
+;; ---------------------------------- Notes on the design -----------------------------------
+;; Json-schema is a tree of mainly nested maps (vectors are also used sometimes).
+;; The existence of nested/ maps vectors are used to denote further children nodes.
+;; At any given node, we need to separate the map entries which represent that node itself
+;; from *structural* entries, i.e. those used to denote further children nodes.
 
 ;; We define a *path* (down through the nested map) as a vector of keywords which are applied
 ;; in sequence to navigate down from the root node. e.g. [:properties :firstName]
-;; ************************************************************
+;; 
+;; ------------------------------------------------------------------------------------------
 
 (defn- get-node
   "takes a nested clojure map, representing json and a path and returns the node at the path."
   [js path]
   (if (empty? path)
     js
-    (get-node ((first path) js) (rest path))))
+    (if (sequential? js)  ;; If node is sequential, merge the maps within and recurse.
+      (let [merged-contents (apply merge js)]
+        (get-node merged-contents path))
+      (get-node ((first path) js) (rest path)))))
 
 
 ;; this is an example rule that we'll use as a default later
@@ -29,55 +35,98 @@
      :description (str "consumer node: " consumer-node " and producer node: " producer-node
                        " are not the same!")}))
 
-
-(defn- fail-rule
+;; A simple rule to be used in the dev process
+(defn- echo-rule
   "Always fails."
   [consumer-node producer-node]
-  {:rule "fail-rule"
-   :severity "minor"
-   :description "I failed!"})
+  {:rule "echo-rule"})
 
 
 (defn- apply-rules
+  "Uses path to navigate to producer-node. Removes structural keys (that lead to
+  children nodes) from the producer node and applies all comparison rules to the
+  consumer node (which has been passed with structural keys removed) and producer node,
+  collecting any comparisons that fail in an error vector and returning it. "
   [consumer-node-pruned producer-js keys-to-remove path error rules]
-  (let [producer-node (get-node producer-js path)]
-    (if (nil? producer-node)
+  (let [producer-node (get-node producer-js path)
+        producer-node-fixed  ;; If node is sequential, merge the maps within.
+                             (if (sequential? producer-node)
+                               (apply merge producer-node)
+                               producer-node)]
+    (if (nil? producer-node-fixed)
       ;; no corresponding producer-node. add an error
       (conj error {:path path
                    :rule "no corresponding producer node"
                    :description (str "no corresponding producer node found!")})
       ;; else we have a producer-node. prune it of any mapentries that lead to
       ;; children levels, before applying all rules and collecting the errors
-      (let [producer-node-pruned (apply dissoc producer-node keys-to-remove)]
+      (let [producer-node-pruned (apply dissoc producer-node-fixed keys-to-remove)]
         (reduce
          (fn [err current-rule]
            (let [result (current-rule consumer-node-pruned producer-node-pruned)]
              (if result
-               (conj err (assoc result :path path))
+               (conj err (assoc result :path path
+                                       :consumer-node consumer-node-pruned
+                                       :producer-node producer-node-pruned))
                err)))
          error
          rules)))))
 
 
-(defn- recurse-down
-  "The implementation of check-contract"
-  [m producer-js path error rules]
-  (let [next-gen         (filter
-                          (fn [[k v]] (map? v))  ;; the mapentries that lead to children levels
-                          m)
-        keys-to-remove    (map first next-gen)  ;; the keys of those mapentries
-        cur-node          (apply dissoc m keys-to-remove)  ;; remove them from cur-node...
-                          ;; ...before checking for errors if cur-node is not empty
-        new-error         (if (empty? cur-node)
-                            error
-                            (apply-rules cur-node producer-js keys-to-remove path error rules))]
-    (if (empty? next-gen)
-      (conj error new-error)
-      (concat error
-              (mapcat
-               (fn [[k v]]
-                 (recurse-down v producer-js (conj path k) new-error rules))
-               next-gen)))))
+(defn- json-schema-non-structural-vector?
+  "Is the supplied key one of those used in json-schema to indicate a
+   non-structural (i.e. doesn't contain child nodes) vector."
+  [k]
+  (or (= k :required) (= k :enum)))
+
+
+(defn- node?
+  "Is the map-entry part of the node - i.e. not a *structural* entry
+   that leads to other child nodes."
+  [[k v]]
+  (and (not (map? v))
+       (or (not (vector? v)) (json-schema-non-structural-vector? k))))
+
+
+(defn node
+  "Returns the node part of the map. Returns a (sub)map"
+  [m]
+  (into {} (get (group-by node? m) true)))
+
+
+(defn structural
+  "Returns the structural map entries in the map. Returns a sequence of 1 entry maps."
+  [m]
+  (into {} (get (group-by node? m) false)))
+
+
+(defn- down
+  "The implementation of check-contract."
+  [item prod-js path error rules]
+  (cond
+    (map? item)         ;; partition node and not-nodes. apply-rules to node, get new-error
+                        ;; and map/cat recurse for non-nodes
+                        (let [nd (node item)
+                              struc-items (structural item)
+                              struc-items-ks (map first struc-items)
+                              new-error (if (empty? nd)
+                                          error
+                                          (apply-rules nd prod-js struc-items-ks
+                                            path error rules))]
+                          (if (empty? struc-items)
+                            new-error
+                            (map
+                              (fn [n] (down n prod-js path new-error rules))
+                               struc-items)))
+
+    (map-entry? item)   ;; add k to path and recurse
+                        (down (val item) prod-js (conj path (key item)) error rules)
+
+    (sequential? item)  ;; e.g. a vector. merge the maps within the sequence and recurse
+                        (down (apply merge item) prod-js path error rules)
+
+    :else               ;; return existing error. nothing to do here.
+                        error))
 
 
 (defn check-contract
@@ -86,4 +135,4 @@
    errors or nil if there are none. If a corresponding node cannot be found in
    the producer contract, an error is added."
   [consumer-js producer-js & {:keys  [rules] :or {rules [default-rule]}}]
-  (distinct (flatten (recurse-down consumer-js producer-js [] [] rules))))
+  (distinct (flatten (down consumer-js producer-js [] [] rules))))
