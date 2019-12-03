@@ -9,7 +9,6 @@
 
 (defn conform-contract
   [js]
-  ;; TODO call core.contract-checker
   (let [in (json/read-str js :key-fn keyword)
         consumer (:consumer in)
         producer (:producer in)]

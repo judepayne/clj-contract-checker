@@ -12,6 +12,33 @@
 ;; 
 ;; ------------------------------------------------------------------------------------------
 
+(defn- json-schema-non-structural-vector?
+  "Is the supplied key one of those used in json-schema to indicate a
+   non-structural (i.e. doesn't contain child nodes) vector."
+  [k]
+  (or (= k :required) (= k :enum)))
+
+
+(defn- node?
+  "Is the map-entry part of the node - i.e. not a *structural* entry
+   that leads to other child nodes."
+  [[k v]]
+  (and (not (map? v))
+       (or (not (vector? v)) (json-schema-non-structural-vector? k))))
+
+
+(defn node
+  "Returns the node part of the map. Returns a (sub)map"
+  [m]
+  (into {} (get (group-by node? m) true)))
+
+
+(defn structural
+  "Returns the structural map entries in the map. Returns a sequence of 1 entry maps."
+  [m]
+  (into {} (get (group-by node? m) false)))
+
+
 (defn- get-node
   "takes a nested clojure map, representing json and a path and returns the node at the path."
   [js path]
@@ -70,33 +97,6 @@
                err)))
          error
          rules)))))
-
-
-(defn- json-schema-non-structural-vector?
-  "Is the supplied key one of those used in json-schema to indicate a
-   non-structural (i.e. doesn't contain child nodes) vector."
-  [k]
-  (or (= k :required) (= k :enum)))
-
-
-(defn- node?
-  "Is the map-entry part of the node - i.e. not a *structural* entry
-   that leads to other child nodes."
-  [[k v]]
-  (and (not (map? v))
-       (or (not (vector? v)) (json-schema-non-structural-vector? k))))
-
-
-(defn node
-  "Returns the node part of the map. Returns a (sub)map"
-  [m]
-  (into {} (get (group-by node? m) true)))
-
-
-(defn structural
-  "Returns the structural map entries in the map. Returns a sequence of 1 entry maps."
-  [m]
-  (into {} (get (group-by node? m) false)))
 
 
 (defn- down
