@@ -1,7 +1,6 @@
 (ns contract-checker.core
   (:require [clojure.data.json :as json]))
 
-
 ;; ---------------------------------- Notes on the design -----------------------------------
 ;; Json-schema is a tree of mainly nested maps (vectors are also used sometimes).
 ;; The existence of nested/ maps vectors are used to denote further children nodes.
