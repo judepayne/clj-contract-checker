@@ -2,7 +2,7 @@
 
 A Clojure library for checking whether consumer data contracts defined in json-schema are compatible with producer contracts.
 
-![(jigsaw.jpg)
+![jigsaw](jigsaw.jpg)
 
 ## Usage
 
