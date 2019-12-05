@@ -9,7 +9,7 @@ A Clojure library for checking whether consumer data contracts defined in json-s
 This library is for checking that a consumer's contract (of the data they need from a producer), which may change over time is still compatible with a producer's contract (specifying the data they supply through some api/ data model).
 
 In an SDLC process (Software Development Life Cycle), producers and consumers will evolve at different rates and times, especially where there is more than one consumer. If we can drive both producers and consumers to specify the need they produce/ need, then checking that a consumer contract is still compatitable with a producer contract adds an extra degree of comfort and automation to an SLDC process.
-![Influential article] (https://martinfowler.com/articles/consumerDrivenContracts.html).
+[Influential article](https://martinfowler.com/articles/consumerDrivenContracts.html).
 
 
 Add to your project.clj (or similar):
