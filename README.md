@@ -34,7 +34,7 @@ The `:key-fn keyword` argument is important; this library expects keys to be key
 
 Alternatively, if you want to work direct from the json without needing to use the `clojure.data.json` library yourself, in the `aws` namespace, there is a function `conform-contract` which works with json given to it directly.
 
-The input should be a single json map with the consumer schema under the "consumer" key and the producer schema under the "producer" key. The `test-schema.json` file is an example of this format.
+The input should be a single json map with the consumer schema under the "consumer" key and the producer schema under the "producer" key. The `test-schema.json` file in the resouces folder is an example of this format.
 
 ### Rules
 
