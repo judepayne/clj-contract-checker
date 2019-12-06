@@ -1,5 +1,6 @@
 (ns contract-checker.core
-  (:require [clojure.data.json :as json]))
+  (:require [clojure.data.json      :as json]
+            [contract-checker.rules :as rules]))
 
 ;; ---------------------------------- Notes on the design -----------------------------------
 ;; Json-schema is a tree of mainly nested maps (vectors are also used sometimes).
@@ -51,7 +52,7 @@
 
 
 ;; this is an example rule that we'll use as a default later
-(defn- default-rule
+(defn default-rule
   "Checks that the nodes are the same."
   [consumer-node producer-node]
   (if (= consumer-node producer-node)
@@ -62,7 +63,7 @@
                        " are not the same!")}))
 
 ;; A simple rule to be used in the dev process
-(defn- echo-rule
+(defn echo-rule
   "Always fails."
   [consumer-node producer-node]
   {:rule "echo-rule"})
