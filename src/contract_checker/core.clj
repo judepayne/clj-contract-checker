@@ -199,7 +199,7 @@
 
 (defn viz [js]
   (if (and (empty? (node js)) (> (count js) 1))
-    (viz {:inserted-root js}) ;; catch when first node only has structural elements.
+    (viz {"{ }" js}) ;; catch when first node only has structural elements.
     (v/view-tree
      (fn [n] (not (empty? (structural n))))
      children
