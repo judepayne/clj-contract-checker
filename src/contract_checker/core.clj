@@ -205,7 +205,8 @@
      children
      js
      :node->descriptor (fn [n] (if (empty? (node n))
-                                 (merge graphviz-node-options {:label (seq->string (keys n))})
+                                 (merge graphviz-node-options {:label (seq->string (keys n))
+                                                               :fillcolor "snow"})
                                  (merge graphviz-node-options {:label (map->string (node n))
-                                                               :fillcolor "lightblue"})))
+                                                               :fillcolor "lightsteelblue1"})))
      :options {})))
