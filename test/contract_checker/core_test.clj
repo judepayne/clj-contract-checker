@@ -4,22 +4,6 @@
             [clojure.data.json :as json]))
 
 
-(defn fail-rule
-  "Always fails."
-  [consumer-node producer-node]
-  {:rule "fail-rule"
-   :severity "minor"
-   :description "I failed!"})
-
-
-(def default-rule cc/default-rule)
-(def echo-rule cc/echo-rule)
-(def check cc/check-contract)
-
-(def js1-producer (json/read-str (slurp "resources/schema1.json") :key-fn keyword))
-(def js2-producer (json/read-str (slurp "resources/schema2.json") :key-fn keyword))
-
-
 ;; https://stackoverflow.com/questions/14488150/how-to-write-a-dissoc-in-command-for-clojure
 (defn dissoc-in
   "Dissociates an entry from a nested associative structure returning a new
@@ -34,6 +18,24 @@
           (dissoc m k)))
       m)
     (dissoc m k)))
+
+
+(defn fail-rule
+  "Always fails."
+  [consumer-node producer-node]
+  {:rule "fail-rule"
+   :severity "minor"
+   :description "I failed!"})
+
+
+(def default-rule cc/default-rule)
+(def echo-rule cc/echo-rule)
+(def check cc/check-contract)
+
+
+(def js1-producer (json/read-str (slurp "resources/schema1.json") :key-fn keyword))
+(def js2-producer (json/read-str (slurp "resources/schema2.json") :key-fn keyword))
+(def js1-consumer (dissoc-in js1-producer [:properties :lastName :type]))
 
 
 (deftest test1

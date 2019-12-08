@@ -1,6 +1,7 @@
 (ns contract-checker.core
   (:require [clojure.data.json      :as json]
-            [contract-checker.rules :as rules]))
+            [contract-checker.rules :as rules]
+            [rhizome.viz :as v]))
 
 ;; ---------------------------------- Notes on the design -----------------------------------
 ;; Json-schema is a tree of mainly nested maps (vectors are also used sometimes).
@@ -21,7 +22,7 @@
 
 
 (defn- node?
-  "Is the map-entry part of the node - i.e. not a *structural* entry
+  "Is this map-entry part of the node - i.e. not a *structural* entry
    that leads to other child nodes."
   [[k v]]
   (and (not (map? v))
@@ -136,3 +137,75 @@
    the producer contract, an error is added."
   [consumer-js producer-js & {:keys  [rules] :or {rules [default-rule]}}]
   (distinct (flatten (down consumer-js producer-js [] [] rules))))
+
+
+;; For visualization of a json-schema
+
+(defn- split-map
+  "Splits a map of n entries into a sequence of n 1-entry maps."
+  [m]
+  (reduce
+   (fn [acc [k v]]
+     (conj acc {k v}))
+   []
+   m))
+
+
+(defn- children
+  "Returns the children of the node."
+  [n]
+  (cond
+    (sequential? n) n
+
+    (map? n) (if (empty? (node n))
+               
+               (let [f (val (first n))]
+                 (if (sequential? f) f
+                     (split-map f)))
+               
+               (split-map (structural n)))))
+
+
+(defn- nodes [js]
+  (tree-seq
+   (fn [n] (not (empty? (structural n))))
+   children
+   js))
+
+
+(defn- map->string
+  "Creates a formatted string representation of the map."
+  [m]
+  (reduce
+   (fn [acc [k v]]
+     (str acc k " " v "\n"))
+   ""
+   m))
+
+
+(defn- seq->string
+  "Creates a formatted string representation of the seq"
+  [s]
+  (reduce
+   (fn [acc cur]
+     (str acc cur))
+   ""
+   s))
+
+
+(def graphviz-node-options
+  {:style "filled, rounded"
+   :fontsize 10
+   :shape "rect"})
+
+
+(defn viz [js]
+  (v/view-tree
+   (fn [n] (not (empty? (structural n))))
+   children
+   js
+   :node->descriptor (fn [n] (if (empty? (node n))
+                               (merge graphviz-node-options {:label (seq->string (keys n))})
+                               (merge graphviz-node-options {:label (map->string (node n))
+                                                             :fillcolor "lightblue"})))
+   :options {}))

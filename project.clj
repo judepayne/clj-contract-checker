@@ -5,6 +5,7 @@
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.10.0"]
                  [org.clojure/data.json "0.2.7"]
-                 [com.amazonaws/aws-lambda-java-core "1.1.0"]]
+                 [com.amazonaws/aws-lambda-java-core "1.1.0"]
+                 [rhizome "0.2.9"]]
   :repl-options {:init-ns contract-checker.core}
   :aot :all)
