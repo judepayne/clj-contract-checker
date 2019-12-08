@@ -32,13 +32,17 @@
 (defn node
   "Returns the node part of the map. Returns a (sub)map"
   [m]
-  (into {} (get (group-by node? m) true)))
+  (if (map? m) ;; guard in case map not passed
+    (into {} (get (group-by node? m) true))
+    m))
 
 
 (defn structural
   "Returns the structural map entries in the map. Returns a sequence of 1 entry maps."
   [m]
-  (into {} (get (group-by node? m) false)))
+  (if (map? m) ;; guard in case map not passed
+    (into {} (get (group-by node? m) false))
+    m))
 
 
 (defn- get-node
@@ -176,11 +180,12 @@
 (defn- map->string
   "Creates a formatted string representation of the map."
   [m]
-  (reduce
-   (fn [acc [k v]]
-     (str acc k " " v "\n"))
-   ""
-   m))
+  (if (string? m) m ;; guard in case map not passed.
+      (reduce
+       (fn [acc [k v]]
+         (str acc k " " v "\n"))
+       ""
+       m)))
 
 
 (defn- seq->string
