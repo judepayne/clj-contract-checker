@@ -162,19 +162,12 @@
     (sequential? n) n
 
     (map? n) (if (empty? (node n))
-               
-               (let [f (val (first n))]
+               ;; i.e. structural entries only
+               (let [f (val (first n))]    ;; - TODO change to handle n > 1
                  (if (sequential? f) f
                      (split-map f)))
-               
+               ;; split out the structural elements
                (split-map (structural n)))))
-
-
-(defn- nodes [js]
-  (tree-seq
-   (fn [n] (not (empty? (structural n))))
-   children
-   js))
 
 
 (defn- map->string
@@ -205,12 +198,14 @@
 
 
 (defn viz [js]
-  (v/view-tree
-   (fn [n] (not (empty? (structural n))))
-   children
-   js
-   :node->descriptor (fn [n] (if (empty? (node n))
-                               (merge graphviz-node-options {:label (seq->string (keys n))})
-                               (merge graphviz-node-options {:label (map->string (node n))
-                                                             :fillcolor "lightblue"})))
-   :options {}))
+  (if (and (empty? (node js)) (> (count js) 1))
+    (viz {:inserted-root js}) ;; catch when first node only has structural elements.
+    (v/view-tree
+     (fn [n] (not (empty? (structural n))))
+     children
+     js
+     :node->descriptor (fn [n] (if (empty? (node n))
+                                 (merge graphviz-node-options {:label (seq->string (keys n))})
+                                 (merge graphviz-node-options {:label (map->string (node n))
+                                                               :fillcolor "lightblue"})))
+     :options {})))
