@@ -44,6 +44,10 @@ A vector of rules can be passed to the `check-contract` function in the core nam
 
 TBD
 
+### Visualization of json-schema
+
+If you have Graphviz installed locally, the `contract-checker.core` namespace contains two functions for visualizing a json-schema. These are `viz` to pop open a window and display, or `viz-svg` which will return an svg string.
+
 --
 
 Enjoy!

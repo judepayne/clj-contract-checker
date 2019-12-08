@@ -197,7 +197,9 @@
    :shape "rect"})
 
 
-(defn viz [js]
+(defn viz
+  "Displays a visualization of the json-schema, if Graphviz is installed."
+  [js]
   (if (and (empty? (node js)) (> (count js) 1))
     (viz {"{ }" js}) ;; catch when first node only has structural elements.
     (v/view-tree
@@ -208,5 +210,20 @@
                                  (merge graphviz-node-options {:label (seq->string (keys n))
                                                                :fillcolor "snow"})
                                  (merge graphviz-node-options {:label (map->string (node n))
-                                                               :fillcolor "lightsteelblue1"})))
-     :options {})))
+                                                               :fillcolor "lightsteelblue1"}))))))
+
+
+(defn viz-svg
+  "Returns svg visualization of the json-schema, if Graphviz is installed."
+  [js]
+  (if (and (empty? (node js)) (> (count js) 1))
+    (viz {"{ }" js}) ;; catch when first node only has structural elements.
+    (v/tree->svg
+     (fn [n] (not (empty? (structural n))))
+     children
+     js
+     :node->descriptor (fn [n] (if (empty? (node n))
+                                 (merge graphviz-node-options {:label (seq->string (keys n))
+                                                               :fillcolor "snow"})
+                                 (merge graphviz-node-options {:label (map->string (node n))
+                                                               :fillcolor "lightsteelblue1"}))))))
