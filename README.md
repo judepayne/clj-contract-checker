@@ -46,7 +46,7 @@ TBD
 
 ### Visualization of json-schema
 
-If you have Graphviz installed locally, the `contract-checker.core` namespace contains two functions for visualizing a json-schema. These are `viz` to pop open a window and display, or `viz-svg` which will return an svg string.
+If you have Graphviz installed locally, the `contract-checker.core` namespace contains two functions for visualizing a json-schema. These are `viz` to pop open a window and display, or `viz-svg` which will return an svg string. Both functions take in a json-schema which has already been converted to Clojure data structures by parsing in using `clojure.data.json` as shown above.
 
 --
 
