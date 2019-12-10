@@ -38,7 +38,7 @@ The input should be a single json map with the consumer schema under the "consum
 
 ### Rules
 
-A vector of rules can be passed to the `check-contract` function in the core namespace. This should not be neccessary as the `contract-checker.rules` namespace contains a full set of rules which return errors that are considered to of severity major or minor, depending on whether the incompatibility represents a breaking change or not.
+A vector of rules can be passed to the `check-contract` function in the core namespace. This should not be neccessary as the `contract-checker.rules` namespace contains a full set of rules which return errors that are considered to of severity major or minor, depending on whether the incompatibility represents a breaking change or not. Please see the `rules.clj` src file for the full set of rules.
 
 ### Callable REST service
 

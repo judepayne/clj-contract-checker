@@ -33,9 +33,9 @@
 (def check cc/check-contract)
 
 
-(def js1-producer (json/read-str (slurp "resources/schema1.json") :key-fn keyword))
-(def js2-producer (json/read-str (slurp "resources/schema2.json") :key-fn keyword))
-(def js1-consumer (dissoc-in js1-producer [:properties :lastName :type]))
+(defonce js1-producer (json/read-str (slurp "resources/schema1.json") :key-fn keyword))
+(defonce js2-producer (json/read-str (slurp "resources/schema2.json") :key-fn keyword))
+(defonce js1-consumer (dissoc-in js1-producer [:properties :lastName :type]))
 
 
 (deftest test1
