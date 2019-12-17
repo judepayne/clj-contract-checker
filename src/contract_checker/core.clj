@@ -18,7 +18,7 @@
   "Is the supplied key one of those used in json-schema to indicate a
    non-structural (i.e. doesn't contain child nodes) vector."
   [k]
-  (or (= k :required) (= k :enum)))
+  (some? (some #{k} [:enum :required :type])))
 
 
 (defn- node?
@@ -124,11 +124,15 @@
                               (fn [n] (down n prod-js path new-error rules))
                                struc-items)))
 
+
     (map-entry? item)   ;; add k to path and recurse
                         (down (val item) prod-js (conj path (key item)) error rules)
 
-    (sequential? item)  ;; e.g. a vector. merge the maps within the sequence and recurse
-                        (down (apply merge item) prod-js path error rules)
+
+    (and (sequential? item)
+      (every? map? item)) ;; e.g. a vector a maps. merge the maps within and recurse
+    (down (apply merge item) prod-js path error rules)
+
 
     :else               ;; return existing error. nothing to do here.
                         error))
