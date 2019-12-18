@@ -26,7 +26,8 @@
    that leads to other child nodes."
   [[k v]]
   (and (not (map? v))
-       (or (not (vector? v)) (json-schema-non-structural-vector? k))))
+       (or (not (vector? v))
+           (json-schema-non-structural-vector? k))))
 
 
 (defn node
@@ -129,9 +130,8 @@
                         (down (val item) prod-js (conj path (key item)) error rules)
 
 
-    (and (sequential? item)
-      (every? map? item)) ;; e.g. a vector a maps. merge the maps within and recurse
-    (down (apply merge item) prod-js path error rules)
+    (sequential? item)
+                        (down (apply merge item) prod-js path error rules)
 
 
     :else               ;; return existing error. nothing to do here.
