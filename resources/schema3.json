@@ -19,15 +19,16 @@
       "minimum": 0,
 	  "maximum": 100
     },
-	"salary": {
+    "salary": {
       "description": "Salary of a person.",
-      "type": "number",
+      "type": "number1",
       "multipleOf": 1.00
     },
-	"role2":{
+    "role2":{
 		"type": "array",
 		"title": "role2",
 		"minItems": 1,
+                "maxItems": 5,
 		"items":{
 			"type": "object",
 			"description": "class B",
@@ -39,12 +40,12 @@
 			}
 		}
 	},
-	"gender":{
-    "type": "array",
-    "items": {
-        "type": "string",
-        "enum": ["male", "female", "others"]
-			}
+   "gender":{
+   	 "type": "array",
+    	"items": {
+        	"type": "string",
+        	"enum": ["male", "female", "others"]
+		}
 	}
   }
 }
