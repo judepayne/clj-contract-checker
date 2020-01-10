@@ -55,7 +55,8 @@
              '({:rule "default-rule",
                 :severity "major",
                 :description
-                "consumer node: {:description \"The person's last name.\"} and producer node: {:type \"string\", :description \"The person's last name.\"} are not the same!",
+                (str "consumer node: {:description \"The person's last name.\"} and producer node: "
+                     "{:type \"string\", :description \"The person's last name.\"} are not the same!"),
                 :path [:properties :lastName],
                 :consumer-node {:description "The person's last name."},
                 :producer-node
@@ -77,7 +78,8 @@
   (is (= (enum-values consumer-node producer-node)
          {:rule "enum values not same" 
           :severity "minor"
-          :description (str "consumer node: " consumer-node " has less enum values than producer node: " producer-node)})))
+          :description (str "consumer node: " consumer-node
+                            " has less enum values than producer node: " producer-node)})))
 
 
 (deftest test-string-length
@@ -86,7 +88,9 @@
   (is (= (string-length consumer-node producer-node) 
          {:rule "strength length changed" 
           :severity "minor"
-          :description (str "consumer node: " consumer-node " and producer node: " producer-node " maximum string lengths are not the same!")})))
+          :description (str "consumer node: " consumer-node
+                            " and producer node: " producer-node
+                            " maximum string lengths are not the same!")})))
 
 
 (deftest test-numeric-range
@@ -95,7 +99,9 @@
   (is (= (numeric-range consumer-node producer-node) 
          {:rule "numeric range changed"
           :severity "major"
-          :desciption (str "consumer node: " consumer-node "and producer node: " producer-node "numeric range aren't the same")})))
+          :desciption (str "consumer node: " consumer-node
+                           "and producer node: " producer-node
+                           "numeric range aren't the same")})))
 
 
 (deftest test-numeric-precision
@@ -104,7 +110,9 @@
   (is (= (numeric-precision consumer-node producer-node)
             {:rule "numeric precision changed"
              :severity "major"
-             :desciption (str "consumer node: " consumer-node "and producer node: " producer-node "numeric precision  aren't the same")} )))
+             :desciption (str "consumer node: " consumer-node
+                              "and producer node: " producer-node
+                              "numeric precision  aren't the same")} )))
 
 
 (deftest test-min-cardinality
@@ -113,7 +121,9 @@
   (is (= (min-cardinality consumer-node producer-node) 
          {:rule "multiplicity changed" 
           :severity "minor"
-          :description (str "consumer node: " consumer-node " and producer node: " producer-node " cardinality aren't the same!")})))
+          :description (str "consumer node: " consumer-node
+                            " and producer node: " producer-node
+                            " cardinality aren't the same!")})))
 
 
 (deftest test-max-cardinality
@@ -122,7 +132,9 @@
   (is (= (max-cardinality consumer-node producer-node) 
          {:rule "multiplicity changed" 
           :severity "major"
-          :description (str "consumer node: " consumer-node " and producer node: " producer-node " cardinality aren't the same!")})))
+          :description (str "consumer node: " consumer-node
+                            " and producer node: " producer-node
+                            " cardinality aren't the same!")})))
 
 
 (deftest test-type-checking
