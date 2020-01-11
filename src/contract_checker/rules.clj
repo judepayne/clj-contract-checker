@@ -27,7 +27,7 @@
 
 (defn attribute-optional
   [consumer-contract producer-contract]
-  (when (some? (some #{"null"} (:type consumer-contract))) 
+  (when (and (some? (some #{"null"} (:type consumer-contract))) (contains? consumer-contract :type))
     {:rule "attribute-name is optional"
      :severity "minor"
      :description (str "consumer node: " consumer-contract " is optional!")}))
