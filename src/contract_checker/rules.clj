@@ -3,7 +3,7 @@
   (:refer-clojure :exclude [contains?]))
 
 
-(defn- contains?
+(defn contains?
   [coll item]
  (cond
    (map? coll)  (clojure.core/contains? coll item)
@@ -181,3 +181,6 @@
      :description (str "consumer node: " consumer-contract
                        " and producer node: " producer-contract
                        " attribute types aren't the same!")}))
+
+
+(def rules [attribute-optional enumeration-values string-length numeric-range numeric-precision minimum-cardinality maximum-cardinality type-checking])

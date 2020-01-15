@@ -1,7 +1,8 @@
 (ns contract-checker.aws
   (:require [clojure.data.json      :as json]
             [contract-checker.core  :as cc]
-            [clojure.java.io        :as io]))
+            [clojure.java.io        :as io]
+            [contract-checker.rules :as rules]))
 
 
 (import com.amazonaws.services.lambda.runtime.Context)
@@ -13,7 +14,7 @@
         consumer (:consumer in)
         producer (:producer in)]
     (if (and consumer producer)
-      (json/write-str {:errors (cc/check-contract (:consumer in) (:producer in))})
+      (json/write-str {:errors (cc/check-contract (:consumer in) (:producer in) :rules rules/rules)})
       (json/write-str {:errors "You must specify both a consumer and producer contract!"}))))
 
 

@@ -145,8 +145,8 @@
 
 
 ;; Demo stuff
-(comment)
+(comment
 
-(def the-rules [attribute-optional enum-values string-length numeric-range numeric-precision min-cardinality type-checking ])
+  (def the-rules [attribute-optional enum-values string-length numeric-range numeric-precision min-cardinality type-checking ])
 
-(check js3-consumer js3-producer :rules the-rules)
+  (check js3-consumer js3-producer :rules the-rules))

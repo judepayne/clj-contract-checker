@@ -75,6 +75,14 @@
   {:rule "echo-rule"})
 
 
+(defn apply-rule
+  "Applies a single rule to a consumer node given the overall producer-node."
+  [rule consumer-node producer-node]
+  (if (rules/contains? (:type consumer-node) "null")
+    nil
+    (rule consumer-node producer-node)))
+
+
 (defn- apply-rules
   "Uses path to navigate to producer-node. Removes structural keys (that lead to
   children nodes) from the producer node and applies all comparison rules to the
@@ -96,7 +104,7 @@
       (let [producer-node-pruned (apply dissoc producer-node-fixed keys-to-remove)]
         (reduce
          (fn [err current-rule]
-           (let [result (current-rule consumer-node-pruned producer-node-pruned)]
+           (let [result (apply-rule current-rule consumer-node-pruned producer-node-pruned)]
              (if result
                (conj err (assoc result :path path
                                        :consumer-node consumer-node-pruned

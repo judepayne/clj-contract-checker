@@ -35,6 +35,7 @@
 			"properties": {
 				"b1":{
 					"type": ["string", "null"],
+                                        "maxItems": 6,
 					"title": "b1"
 				}
 			}

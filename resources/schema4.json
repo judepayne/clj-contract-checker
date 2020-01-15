@@ -34,7 +34,8 @@
 			"description": "class B",
 			"properties": {
 				"b1":{
-					"type": ["string", "null"],
+					"type": ["string"],
+                                        "maxItems": 5,
 					"title": "b1"
 				}
 			}
