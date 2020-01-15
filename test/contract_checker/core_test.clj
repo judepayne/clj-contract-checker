@@ -26,7 +26,8 @@
 (def echo-rule cc/echo-rule)
 (def check cc/check-contract)
 (def attribute-optional rules/attribute-optional)
-(def enum-values rules/enumeration-values)
+(def enum-values
+ rules/enumeration-values)
 (def string-length rules/string-length)
 (def string-pattern rules/string-pattern)
 (def numeric-range rules/numeric-range)
@@ -146,6 +147,6 @@
 ;; Demo stuff
 (comment)
 
-(def the-rules [attribute-optional enum-values string-length])
+(def the-rules [attribute-optional enum-values string-length numeric-range numeric-precision min-cardinality type-checking ])
 
 (check js3-consumer js3-producer :rules the-rules)
