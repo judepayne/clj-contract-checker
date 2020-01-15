@@ -52,15 +52,15 @@
   (testing "Producer and Consumer contracts the same"
     (let [js1-consumer (dissoc-in js1-producer [:properties :lastName :type])]
       (is (= (check js1-consumer js1-producer) 
-             '({:rule "default-rule",
-                :severity "major",
-                :description
-                (str "consumer node: {:description \"The person's last name.\"} and producer node: "
-                     "{:type \"string\", :description \"The person's last name.\"} are not the same!"),
-                :path [:properties :lastName],
-                :consumer-node {:description "The person's last name."},
-                :producer-node
-                {:type "string", :description "The person's last name."}}))))))
+             (list {:rule "default-rule",
+                    :severity "major",
+                    :description
+                    (str "consumer node: {:description \"The person's last name.\"} and producer node: "
+                         "{:type \"string\", :description \"The person's last name.\"} are not the same!"),
+                    :path [:properties :lastName],
+                    :consumer-node {:description "The person's last name."},
+                    :producer-node
+                    {:type "string", :description "The person's last name."}}))))))
 
 
 (deftest test-attr-optional
