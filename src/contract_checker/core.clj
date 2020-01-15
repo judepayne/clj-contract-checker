@@ -1,7 +1,6 @@
 (ns contract-checker.core
   (:require [clojure.data.json      :as json]
-            [contract-checker.rules :as rules]
-            [rhizome.viz :as v]))
+            [contract-checker.rules :as rules]))
 
 ;; ---------------------------------- Notes on the design -----------------------------------
 ;; Json-schema is a tree of mainly nested maps (vectors are also used sometimes).
@@ -67,12 +66,6 @@
      :severity "major"
      :description (str "consumer node: " consumer-node " and producer node: " producer-node
                        " are not the same!")}))
-
-;; A simple rule to be used in the dev process
-(defn echo-rule
-  "Always fails."
-  [consumer-node producer-node]
-  {:rule "echo-rule"})
 
 
 (defn apply-rule
@@ -153,89 +146,3 @@
    the producer contract, an error is added."
   [consumer-js producer-js & {:keys  [rules] :or {rules [default-rule]}}]
   (distinct (flatten (down consumer-js producer-js [] [] rules))))
-
-
-;; For visualization of a json-schema
-
-(defn- split-map
-  "Splits a map of n entries into a sequence of n 1-entry maps."
-  [m]
-  (reduce
-   (fn [acc [k v]]
-     (conj acc {k v}))
-   []
-   m))
-
-
-(defn- children
-  "Returns the children of the node."
-  [n]
-  (cond
-    (sequential? n) n
-
-    (map? n) (if (empty? (node n))
-               ;; i.e. structural entries only
-               (let [f (val (first n))]    ;; - TODO change to handle n > 1
-                 (if (sequential? f) f
-                     (split-map f)))
-               ;; split out the structural elements
-               (split-map (structural n)))))
-
-
-(defn- map->string
-  "Creates a formatted string representation of the map."
-  [m]
-  (if (string? m) m ;; guard in case map not passed.
-      (reduce
-       (fn [acc [k v]]
-         (str acc k " " v "\n"))
-       ""
-       m)))
-
-
-(defn- seq->string
-  "Creates a formatted string representation of the seq"
-  [s]
-  (reduce
-   (fn [acc cur]
-     (str acc cur))
-   ""
-   s))
-
-
-(def graphviz-node-options
-  {:style "filled, rounded"
-   :fontsize 10
-   :shape "rect"})
-
-
-(defn viz
-  "Displays a visualization of the json-schema, if Graphviz is installed."
-  [js]
-  (if (and (empty? (node js)) (> (count js) 1))
-    (viz {"{ }" js}) ;; catch when first node only has structural elements.
-    (v/view-tree
-     (fn [n] (not (empty? (structural n))))
-     children
-     js
-     :node->descriptor (fn [n] (if (empty? (node n))
-                                 (merge graphviz-node-options {:label (seq->string (keys n))
-                                                               :fillcolor "snow"})
-                                 (merge graphviz-node-options {:label (map->string (node n))
-                                                               :fillcolor "lightsteelblue1"}))))))
-
-
-(defn viz-svg
-  "Returns svg visualization of the json-schema, if Graphviz is installed."
-  [js]
-  (if (and (empty? (node js)) (> (count js) 1))
-    (viz {"{ }" js}) ;; catch when first node only has structural elements.
-    (v/tree->svg
-     (fn [n] (not (empty? (structural n))))
-     children
-     js
-     :node->descriptor (fn [n] (if (empty? (node n))
-                                 (merge graphviz-node-options {:label (seq->string (keys n))
-                                                               :fillcolor "snow"})
-                                 (merge graphviz-node-options {:label (map->string (node n))
-                                                               :fillcolor "lightsteelblue1"}))))))

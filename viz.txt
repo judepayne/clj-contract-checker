@@ -1,0 +1,85 @@
+;; For visualization of a json-schema
+
+(defn- split-map
+  "Splits a map of n entries into a sequence of n 1-entry maps."
+  [m]
+  (reduce
+   (fn [acc [k v]]
+     (conj acc {k v}))
+   []
+   m))
+
+
+(defn- children
+  "Returns the children of the node."
+  [n]
+  (cond
+    (sequential? n) n
+
+    (map? n) (if (empty? (node n))
+               ;; i.e. structural entries only
+               (let [f (val (first n))]    ;; - TODO change to handle n > 1
+                 (if (sequential? f) f
+                     (split-map f)))
+               ;; split out the structural elements
+               (split-map (structural n)))))
+
+
+(defn- map->string
+  "Creates a formatted string representation of the map."
+  [m]
+  (if (string? m) m ;; guard in case map not passed.
+      (reduce
+       (fn [acc [k v]]
+         (str acc k " " v "\n"))
+       ""
+       m)))
+
+
+(defn- seq->string
+  "Creates a formatted string representation of the seq"
+  [s]
+  (reduce
+   (fn [acc cur]
+     (str acc cur))
+   ""
+   s))
+
+
+(def graphviz-node-options
+  {:style "filled, rounded"
+   :fontsize 10
+   :shape "rect"})
+
+
+(defn viz
+  "Displays a visualization of the json-schema, if Graphviz is installed."
+  [js]
+  (if (and (empty? (node js)) (> (count js) 1))
+    (viz {"{ }" js}) ;; catch when first node only has structural elements.
+    (v/view-tree
+     (fn [n] (not (empty? (structural n))))
+     children
+     js
+     :node->descriptor (fn [n] (if (empty? (node n))
+                                 (merge graphviz-node-options {:label (seq->string (keys n))
+                                                               :fillcolor "snow"})
+                                 (merge graphviz-node-options {:label (map->string (node n))
+                                                               :fillcolor "lightsteelblue1"}))))))
+
+
+(defn viz-svg
+  "Returns svg visualization of the json-schema, if Graphviz is installed."
+  [js]
+  (if (and (empty? (node js)) (> (count js) 1))
+    (viz {"{ }" js}) ;; catch when first node only has structural elements.
+    (v/tree->svg
+     (fn [n] (not (empty? (structural n))))
+     children
+     js
+     :node->descriptor (fn [n] (if (empty? (node n))
+                                 (merge graphviz-node-options {:label (seq->string (keys n))
+                                                               :fillcolor "snow"})
+                                 (merge graphviz-node-options {:label (map->string (node n))
+                                                               :fillcolor "lightsteelblue1"}))))))
+
