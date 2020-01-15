@@ -77,8 +77,8 @@
   (let [consumer-node (get-in js3-consumer [:properties :gender :items])
         producer-node (get-in js3-producer [:properties :gender :items])]
       (is (= (enum-values consumer-node producer-node)
-             {:rule "enum values not same" 
-              :severity "minor"
+             {:rule "enum values are not same" 
+              :severity "major"
               :description (str "consumer node: " consumer-node
                                 " has less enum values than producer node: " producer-node)}))))
 

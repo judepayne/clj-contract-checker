@@ -39,7 +39,7 @@
              (contains? producer-contract :enum))
     (if (< (count (:enum consumer-contract))
            (count (:enum producer-contract))) 
-      {:rule "enum values are not samegg" 
+      {:rule "enum values are not same" 
        :severity "major"
        :description (str "consumer node: " consumer-contract
                          " has less enum values than producer node: " producer-contract)}
