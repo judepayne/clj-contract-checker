@@ -37,19 +37,19 @@
   [consumer-contract producer-contract]
   (when (and (contains? consumer-contract :enum)
              (contains? producer-contract :enum))
-    (if (> (count (:enum consumer-contract))
+    (if (< (count (:enum consumer-contract))
            (count (:enum producer-contract))) 
       {:rule "enum values are not samegg" 
        :severity "major"
        :description (str "consumer node: " consumer-contract
-                         " has more enum values than producer node: " producer-contract)}
+                         " has less enum values than producer node: " producer-contract)}
 
-      (if (< (count (:enum consumer-contract))
+      (if (> (count (:enum consumer-contract))
              (count (:enum producer-contract))) 
         {:rule "enum values not same" 
          :severity "minor"
          :description (str "consumer node: " consumer-contract
-                           " has less enum values than producer node: " producer-contract)}
+                           " has more enum values than producer node: " producer-contract)}
  
         (when (not= (:enum consumer-contract)
                     (:enum producer-contract))
