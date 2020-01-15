@@ -141,3 +141,11 @@
   (let [consumer-node (get-in js3-consumer [:properties :salary])
         producer-node (get-in js3-producer [:properties :salary])]
     (is (= (type-checking consumer-node producer-node) nil))))
+
+
+;; Demo stuff
+(comment)
+
+(def the-rules [attribute-optional enum-values string-length])
+
+(check js3-consumer js3-producer :rules the-rules)
