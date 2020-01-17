@@ -1,4 +1,7 @@
 /target
 /classes
 aws-commands.txt
+lein*
+.nrepl*
+pom.xml
 
