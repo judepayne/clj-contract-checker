@@ -43,7 +43,7 @@
 	},
    "gender":{
    	 "type": "array",
-    	"items": {
+    	 "items": {
         	"type": "string",
         	"enum": ["male", "female", "others", "x"]
 		}

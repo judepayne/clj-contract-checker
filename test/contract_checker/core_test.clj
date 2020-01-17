@@ -1,8 +1,8 @@
 (ns contract-checker.core-test
-  (:require [clojure.test :refer :all]
-            [contract-checker.core :as cc]
-            [contract-checker.rules :as rules]
-            [clojure.data.json :as json]))
+     (:require [clojure.test :refer :all]
+               [contract-checker.core :as cc]
+               [contract-checker.rules :as rules]
+               [clojure.data.json :as json]))
 
 
 ;; https://stackoverflow.com/questions/14488150/how-to-write-a-dissoc-in-command-for-clojure
@@ -25,17 +25,17 @@
 (def default-rule cc/default-rule)
 (def echo-rule cc/echo-rule)
 (def check cc/check-contract)
-(def attribute-optional rules/attribute-optional)
-(def enum-values
- rules/enumeration-values)
-(def string-length rules/string-length)
-(def string-pattern rules/string-pattern)
-(def numeric-range rules/numeric-range)
-(def numeric-precision rules/numeric-precision)
-(def min-cardinality rules/minimum-cardinality)
-(def max-cardinality rules/maximum-cardinality)
-(def type-checking rules/type-checking)
-
+(def class-rename rules/class-renamed-rule)
+(def attribute-optional rules/attribute-optional-rule)
+(def enum-values rules/enumeration-values-rule)
+(def string-length rules/string-length-rule)
+(def string-pattern rules/string-pattern-rule)
+(def numeric-range rules/numeric-range-rule)
+(def numeric-precision rules/numeric-precision-rule)
+(def min-cardinality rules/minimum-cardinality-rule)
+(def max-cardinality rules/maximum-cardinality-rule)
+(def type-checking rules/type-checking-rule)
+(def keys-same rules/keys-same-rule)
 
 (defonce js1-producer (json/read-str (slurp "resources/schema1.json") :key-fn keyword))
 (defonce js2-producer (json/read-str (slurp "resources/schema2.json") :key-fn keyword))
@@ -64,10 +64,20 @@
                     {:type "string", :description "The person's last name."}}))))))
 
 
+(deftest test-class-rename
+  (let [consumer-node (get-in js3-consumer [:$id])
+        producer-node (get-in js3-producer [:$id])]
+    (is (= (class-rename consumer-node producer-node) 
+{:rule "class is renamed"
+     :severity "minor"
+     :description (str "consumer node: " consumer-node
+                       " and producer node: " producer-node
+                       " class names are not the same!")}))))
+
+
 (deftest test-attr-optional
-  (let [consumer-node (get-in js3-consumer [:properties :role2 :items :properties :b1]) 
-        producer-node consumer-node]
-    (is (= (attribute-optional consumer-node consumer-node) 
+  (let [consumer-node (get-in js3-consumer [:properties :role2 :items :properties :b1])]
+    (is (= (attribute-optional consumer-node) 
            {:rule "attribute-name is optional"
             :severity "minor"
             :description (str "consumer node: " consumer-node " is optional!")}))))
@@ -144,9 +154,17 @@
     (is (= (type-checking consumer-node producer-node) nil))))
 
 
+(deftest test-keys-same
+  (let [consumer-node (get-in js3-consumer [:properties :gender])
+        producer-node (get-in js3-producer [:properties :gender])]
+    (is (= (keys-same consumer-node producer-node)
+           nil))))
+
+
+
 ;; Demo stuff
 (comment
 
-  (def the-rules [attribute-optional enum-values string-length numeric-range numeric-precision min-cardinality type-checking ])
+  (def the-rules [class-rename attribute-optional enum-values string-length numeric-range numeric-precision min-cardinality max-cardinality type-checking keys-same ])
 
   (check js3-consumer js3-producer :rules the-rules))
