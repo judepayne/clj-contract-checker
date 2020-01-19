@@ -46,7 +46,7 @@
 
 
 (defn attribute-optional-rule
-  [consumer-contract]
+  [consumer-contract producer-contract]
   ;;checks if the attribute is optional in the consumer contract
   (when (and (some? (some #{"null"} (:type consumer-contract))) (contains? consumer-contract :type))
     {:rule "attribute-name is optional"

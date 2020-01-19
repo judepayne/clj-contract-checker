@@ -23,7 +23,7 @@
 
 
 (def default-rule cc/default-rule)
-(def echo-rule cc/echo-rule)
+;(def echo-rule cc/echo-rule)
 (def check cc/check-contract)
 (def class-rename rules/class-renamed-rule)
 (def attribute-optional rules/attribute-optional-rule)
@@ -76,8 +76,9 @@
 
 
 (deftest test-attr-optional
-  (let [consumer-node (get-in js3-consumer [:properties :role2 :items :properties :b1])]
-    (is (= (attribute-optional consumer-node) 
+  (let [consumer-node (get-in js3-consumer [:properties :role2 :items :properties :b1])
+        producer-node consumer-node]
+    (is (= (attribute-optional consumer-node producer-node) 
            {:rule "attribute-name is optional"
             :severity "minor"
             :description (str "consumer node: " consumer-node " is optional!")}))))
