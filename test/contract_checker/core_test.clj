@@ -63,34 +63,29 @@
                     :producer-node
                     {:type "string", :description "The person's last name."}}))))))
 
-
+ 
 (deftest test-class-rename
   (let [consumer-node (get-in js3-consumer [:$id])
         producer-node (get-in js3-producer [:$id])]
-    (is (= (class-rename consumer-node producer-node) 
-{:rule "class is renamed"
-     :severity "minor"
-     :description (str "consumer node: " consumer-node
-                       " and producer node: " producer-node
-                       " class names are not the same!")}))))
+    (is (= (class-rename consumer-node producer-node)) nil)))
 
 
 (deftest test-attr-optional
   (let [consumer-node (get-in js3-consumer [:properties :role2 :items :properties :b1])
         producer-node consumer-node]
     (is (= (attribute-optional consumer-node producer-node) 
-           {:rule "attribute-name is optional"
-            :severity "minor"
-            :description (str "consumer node: " consumer-node " is optional!")}))))
+           {:rule "Attribute name is optional"
+            :severity "Minor"
+            :description (str "Consumer node: " consumer-node " is optional!")}))))
 
 
 (deftest test-enum-values
   (let [consumer-node (get-in js3-consumer [:properties :gender :items])
         producer-node (get-in js3-producer [:properties :gender :items])]
       (is (= (enum-values consumer-node producer-node)
-             {:rule "enum values are not same" 
-              :severity "major"
-              :description (str "consumer node: " consumer-node
+             {:rule "Enum values are not same" 
+              :severity "Major"
+              :description (str "Consumer node: " consumer-node
                                 " has less enum values than producer node: " producer-node)}))))
 
 
@@ -98,9 +93,9 @@
   (let [consumer-node (get-in js3-consumer [:properties :firstName])
         producer-node (get-in js3-producer [:properties :firstName])]
     (is (= (string-length consumer-node producer-node) 
-           {:rule "strength length changed" 
-            :severity "minor"
-            :description (str "consumer node: " consumer-node
+           {:rule "Strength length changed" 
+            :severity "Minor"
+            :description (str "Consumer node: " consumer-node
                               " and producer node: " producer-node
                               " maximum string lengths are not the same!")}))))
 
@@ -109,9 +104,9 @@
   (let [consumer-node (get-in js3-consumer [:properties :age])
         producer-node (get-in js3-producer [:properties :age])]
     (is (= (numeric-range consumer-node producer-node) 
-           {:rule "numeric range changed"
-            :severity "major"
-            :desciption (str "consumer node: " consumer-node
+           {:rule "Numeric range changed"
+            :severity "Major"
+            :desciption (str "Consumer node: " consumer-node
                              "and producer node: " producer-node
                              "numeric range aren't the same")}))))
 
@@ -120,9 +115,9 @@
   (let [consumer-node (get-in js3-consumer [:properties :salary])
         producer-node (get-in js3-producer [:properties :salary])]
     (is (= (numeric-precision consumer-node producer-node)
-           {:rule "numeric precision changed"
-            :severity "major"
-            :desciption (str "consumer node: " consumer-node
+           {:rule "Numeric precision changed"
+            :severity "Major"
+            :desciption (str "Consumer node: " consumer-node
                              "and producer node: " producer-node
                              "numeric precision  aren't the same")}))))
 
@@ -131,9 +126,9 @@
   (let [consumer-node (get-in js3-consumer [:properties :role2])
         producer-node (get-in js3-producer [:properties :role2])]
     (is (= (min-cardinality consumer-node producer-node) 
-           {:rule "multiplicity changed" 
-            :severity "minor"
-            :description (str "consumer node: " consumer-node
+           {:rule "Multiplicity changed" 
+            :severity "Minor"
+            :description (str "Consumer node: " consumer-node
                               " and producer node: " producer-node
                               " cardinality aren't the same!")}))))
 
@@ -142,9 +137,9 @@
   (let [consumer-node (get-in js3-consumer [:properties :role2])
         producer-node (get-in js3-producer [:properties :role2])]
     (is (= (max-cardinality consumer-node producer-node) 
-           {:rule "multiplicity changed" 
-            :severity "major"
-            :description (str "consumer node: " consumer-node
+           {:rule "Multiplicity changed" 
+            :severity "Major"
+            :description (str "Consumer node: " consumer-node
                               " and producer node: " producer-node
                               " cardinality aren't the same!")}))))
 

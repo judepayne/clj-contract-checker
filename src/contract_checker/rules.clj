@@ -24,9 +24,9 @@
   (let [ consumer-keys ( into #{} (keys consumer-contract))
         producer-keys (into #{} (keys producer-contract)) ] 
     (when (not ( = consumer-keys producer-keys))
-      {:rule "attributes mismatch"
-       :severity "major"
-       :description (str "consumer node attributes: " consumer-keys
+      {:rule "Attributes mismatch"
+       :severity "Major"
+       :description (str "Consumer node attributes: " consumer-keys
                          " and producer node attributes: " producer-keys
                          " aren't the same!")})))
 
@@ -34,13 +34,12 @@
 (defn class-renamed-rule
   [consumer-contract producer-contract]
   ;;returns the impact when the class is renamed in the producer schema
-  (if (and
+  (when (and
        (attr-in-both? consumer-contract producer-contract :$id)
-       (= (:$id consumer-contract) (:$id   producer-contract)))
-    nil
-    {:rule "class is renamed"
-     :severity "minor"
-     :description (str "consumer node: " consumer-contract
+       (not= (:$id consumer-contract) (:$id   producer-contract)))
+    {:rule "Class is renamed"
+     :severity "Minor"
+     :description (str "Consumer node: " consumer-contract
                        " and producer node: " producer-contract
                        " class names are not the same!")}))
 
@@ -49,9 +48,9 @@
   [consumer-contract producer-contract]
   ;;checks if the attribute is optional in the consumer contract
   (when (and (some? (some #{"null"} (:type consumer-contract))) (contains? consumer-contract :type))
-    {:rule "attribute-name is optional"
-     :severity "minor"
-     :description (str "consumer node: " consumer-contract " is optional!")}))
+    {:rule "Attribute name is optional"
+     :severity "Minor"
+     :description (str "Consumer node: " consumer-contract " is optional!")}))
 
 
 (defn enumeration-values-rule
@@ -60,25 +59,25 @@
   (if (attr-in-both? consumer-contract producer-contract :enum)
     (if (< (count (:enum consumer-contract))
            (count (:enum producer-contract))) 
-      {:rule "enum values are not same" 
-       :severity "major"
-       :description (str "consumer node: " consumer-contract 
+      {:rule "Enum values are not same" 
+       :severity "Major"
+       :description (str "Consumer node: " consumer-contract 
                          " has less enum values than producer node: "
                          producer-contract)}
 
       (if (> (count (:enum consumer-contract))
              (count (:enum producer-contract))) 
-        {:rule "enum values not same" 
-         :severity "minor"
-         :description (str "consumer node: " consumer-contract 
+        {:rule "Enum values not same" 
+         :severity "Minor"
+         :description (str "Consumer node: " consumer-contract 
                            "has more enum values than producer node: " 
                            producer-contract)}
         
         (when (not= (:enum consumer-contract)
                     (:enum producer-contract))
-          {:rule "enum values are not the same"
-           :severity "major"
-           :description (str "consumer node: " consumer-contract " and producer node: " producer-contract "enum values are not the same")})))))
+          {:rule "Enum values are not the same"
+           :severity "Major"
+           :description (str "Consumer node: " consumer-contract " and producer node: " producer-contract "enum values are not the same")})))))
 
 
 (defn string-length-rule
@@ -86,15 +85,15 @@
   ;;returns the impact on the consumer when the string length is decreased or increased
   (if (attr-in-both? consumer-contract producer-contract :maxLength)
     (if (> (:maxLength consumer-contract) (:maxLength producer-contract))
-      {:rule "strength length changed" 
-       :severity "minor"
-       :description (str "consumer node: " consumer-contract 
+      {:rule "Strength length changed" 
+       :severity "Minor"
+       :description (str "Consumer node: " consumer-contract 
                          " and producer node: " producer-contract 
                          " maximum string lengths are not the same!") } 
       (when (< (:maxLength consumer-contract) (:maxLength producer-contract))
-        {:rule "string length changed" 
-         :severity "major"
-         :description (str "consumer node: " consumer-contract 
+        {:rule "String length changed" 
+         :severity "Major"
+         :description (str "Consumer node: " consumer-contract 
                            " and producer node: " producer-contract 
                            " maximum string lengths are not the same!")}))))
 
@@ -106,9 +105,9 @@
     (when
       (not= (consumer-contract :pattern)
             (producer-contract :pattern))
-      {:rule "pattern changed" 
-       :severity "major"
-       :description (str "consumer node: " consumer-contract 
+      {:rule "Pattern changed" 
+       :severity "Major"
+       :description (str "Consumer node: " consumer-contract 
                          " and producer node: " producer-contract 
                          " string patterns are not the same!")})))
 
@@ -119,16 +118,16 @@
   (if (attr-in-both? consumer-contract producer-contract :maximum)
     (if (> (:maximum consumer-contract)
            (:maximum producer-contract))
-      {:rule "numeric range changed" 
-       :severity "minor" 
-       :description (str "consumer node: " consumer-contract
+      {:rule "Numeric range changed" 
+       :severity "Minor" 
+       :description (str "Consumer node: " consumer-contract
                          " and producer node:  " producer-contract
                          " numeric ranges aren't the same!")}
       (when (< (:maximum consumer-contract)
                (:maximum producer-contract) ) 
-        {:rule "numeric range changed"
-         :severity "major"
-         :desciption (str "consumer node: " consumer-contract
+        {:rule "Numeric range changed"
+         :severity "Major"
+         :desciption (str "Consumer node: " consumer-contract
                           "and producer node: " producer-contract
                           "numeric range aren't the same")}))))
 
@@ -138,16 +137,16 @@
   (if (attr-in-both? consumer-contract producer-contract :multipleOf)   
     (if (> (:multipleOf consumer-contract)
            (:multipleOf producer-contract))
-      {:rule "numeric precision changed" 
-       :severity "minor" 
-       :description (str "consumer node: " consumer-contract
+      {:rule "Numeric precision changed" 
+       :severity "Minor" 
+       :description (str "Consumer node: " consumer-contract
                          " and producer node:  " producer-contract
                          " numeric precision aren't the same!")}
       (when (< (:multipleOf consumer-contract)
                (:multipleOf producer-contract)) 
-        {:rule "numeric precision changed"
-         :severity "major"
-         :desciption (str "consumer node: " consumer-contract
+        {:rule "Numeric precision changed"
+         :severity "Major"
+         :desciption (str "Consumer node: " consumer-contract
                           "and producer node: " producer-contract
                           "numeric precision  aren't the same")}))))
 
@@ -158,17 +157,17 @@
   (if (attr-in-both? consumer-contract producer-contract :minItems)
     (if (< (:minItems consumer-contract)
            (:minItems producer-contract)) 
-      {:rule "multiplicity changed" 
-       :severity "minor"
-       :description (str "consumer node: " consumer-contract
+      {:rule "Multiplicity changed" 
+       :severity "Minor"
+       :description (str "Consumer node: " consumer-contract
                          " and producer node: " producer-contract
                          " cardinality aren't the same!")} 
       (when (and (attr-in-both? consumer-contract producer-contract :minItems)
                  (> (:minItems consumer-contract)
                     (:minItems producer-contract))) 
-        {:rule "multiplicity changed" 
-         :severity "major"
-         :description (str "consumer node: " consumer-contract
+        {:rule "Multiplicity changed" 
+         :severity "Major"
+         :description (str "Consumer node: " consumer-contract
                            " and producer node: " producer-contract
                            " cardinality aren't the same!")}))))
 
@@ -179,17 +178,17 @@
   (if (attr-in-both? consumer-contract producer-contract :maxItems)
     (if (> (:maxItems consumer-contract)
            (:maxItems producer-contract)) 
-      {:rule "multiplicity changed" 
-       :severity "minor"
-       :description (str "consumer node: " consumer-contract 
+      {:rule "Multiplicity changed" 
+       :severity "Minor"
+       :description (str "Consumer node: " consumer-contract 
                          " and producer node: " producer-contract
                          " cardinality aren't the same!")} 
       (when (and (attr-in-both? consumer-contract producer-contract :maxItems) 
                  (< (:maxItems consumer-contract)
                     (:maxItems producer-contract))) 
-        {:rule "multiplicity changed" 
-         :severity "major"
-         :description (str "consumer node: " consumer-contract
+        {:rule "Multiplicity changed" 
+         :severity "Major"
+         :description (str "Consumer node: " consumer-contract
                            " and producer node: " producer-contract
                            " cardinality aren't the same!")}))))
 
@@ -200,9 +199,9 @@
   (if (attr-in-both? consumer-contract producer-contract :type)
     (when (not= (:type consumer-contract)
                 (:type producer-contract)) 
-      {:rule "attribute type should be the same"
-       :severity "major"
-       :description (str "consumer node: " consumer-contract " and producer node: " producer-contract " attribute types aren't the same!")})))
+      {:rule "Attribute type should be the same"
+       :severity "Major"
+       :description (str "Consumer node: " consumer-contract " and producer node: " producer-contract " attribute types aren't the same!")})))
 
 
 (def rules [class-renamed-rule attribute-optional-rule enumeration-values-rule string-length-rule string-pattern-rule numeric-range-rule numeric-precision-rule minimum-cardinality-rule maximum-cardinality-rule type-checking-rule keys-same-rule])
