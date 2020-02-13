@@ -59,21 +59,22 @@
 ;; this is an example rule that we'll use as a default later
 (defn default-rule
   "Checks that the nodes are the same."
-  [consumer-node producer-node]
+  [consumer-node producer-node path]
   (if (= consumer-node producer-node)
     nil
     {:rule "default-rule"
      :severity "major"
      :description (str "consumer node: " consumer-node " and producer node: " producer-node
-                       " are not the same!")}))
+                       " are not the same!")
+     :path path}))
 
 
 (defn apply-rule
   "Applies a single rule to a consumer node given the overall producer-node."
-  [rule consumer-node producer-node]
+  [rule consumer-node producer-node path]
   (if (rules/contains? (:type consumer-node) "null")
     nil
-    (rule consumer-node producer-node)))
+    (rule consumer-node producer-node path)))
 
 
 (defn- apply-rules
