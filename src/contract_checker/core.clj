@@ -97,10 +97,9 @@
       (let [producer-node-pruned (apply dissoc producer-node-fixed keys-to-remove)]
         (reduce
          (fn [err current-rule]
-           (let [result (apply-rule current-rule consumer-node-pruned producer-node-pruned)]
+           (let [result (apply-rule current-rule consumer-node-pruned producer-node-pruned path)]
              (if result
-               (conj err (assoc result :path path
-                                       :consumer-node consumer-node-pruned
+               (conj err (assoc result :consumer-node consumer-node-pruned
                                        :producer-node producer-node-pruned))
                err)))
          error
