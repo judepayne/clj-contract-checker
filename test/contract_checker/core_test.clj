@@ -42,11 +42,12 @@
 (defonce js1-consumer (dissoc-in js1-producer [:properties :lastName :type]))
 (defonce js3-consumer (json/read-str (slurp "resources/schema3.json") :key-fn keyword))
 (defonce js3-producer (json/read-str (slurp "resources/schema4.json") :key-fn keyword))
-
+(defonce js4-consumer (json/read-str (slurp "resources/schema5.json") :key-fn keyword))
 
 (deftest test1
   (testing "Producer and Consumer contracts the same"
-    (is (= (check js1-producer js1-producer) '()))))
+    (is (= (check js1-producer js1-producer) '()))
+    ))
 
 
 (deftest test2
@@ -161,8 +162,17 @@
   (let [consumer-node (get-in js3-consumer [:properties :gender])
         producer-node (get-in js3-producer [:properties :gender])]
     (is (= (keys-same consumer-node producer-node [:properties :gender])
-           nil))))
+           ()))))
 
+
+(deftest test-keys
+  (is (= (check js3-consumer js4-consumer) 
+         ({:path [:properties :gender],
+           :rule "no corresponding producer node",
+           :description "no corresponding producer node found!"}
+          {:path [:properties :gender :items],
+           :rule "no corresponding producer node",
+           :description "no corresponding producer node found!"}))))           
 
 
 ;; Demo stuff

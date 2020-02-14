@@ -1,6 +1,7 @@
 (ns contract-checker.rules
   (:require [clojure.data.json      :as json])
-  (:refer-clojure :exclude [contains?]))
+  (:refer-clojure :exclude [contains?])
+  (:require [clojure.set :as set]))
 
 
 (defn contains?
@@ -22,14 +23,15 @@
 (defn keys-same-rule
   [consumer-contract producer-contract path]
   (let [ consumer-keys ( into #{} (keys consumer-contract))
-        producer-keys (into #{} (keys producer-contract)) ] 
-    (when (not ( = consumer-keys producer-keys))
-      {:rule "Attributes mismatch"
-       :severity "Major"
-       :description (str "Consumer node attributes: " consumer-keys
-                         " and producer node attributes: " producer-keys
-                         " aren't the same!")
-       :path path})))
+        producer-keys (into #{} (keys producer-contract)) 
+        errors (for [x (set/difference consumer-keys producer-keys)]
+                  {:rule "Attributes mismatch"
+                   :severity "Major"
+                   :description (str "Consumer node attributes: " consumer-keys
+                                     " and producer node attributes: " producer-keys
+                                     " aren't the same!")
+                   :path (conj path x)})]
+    errors ))
 
 
 (defn class-renamed-rule
