@@ -31,7 +31,7 @@
                                      " and producer node attributes: " producer-keys
                                      " aren't the same!")
                    :path (conj path x)})]
-    errors ))
+    errors))
 
 
 (defn class-renamed-rule

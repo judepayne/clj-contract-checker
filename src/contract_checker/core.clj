@@ -99,10 +99,19 @@
         (reduce
          (fn [err current-rule]
            (let [result (apply-rule current-rule consumer-node-pruned producer-node-pruned path)]
-             (if result
-               (conj err (assoc result :consumer-node consumer-node-pruned
-                                       :producer-node producer-node-pruned))
-               err)))
+             (cond
+               (map? result) (conj err (assoc result
+                                              :consumer-node consumer-node-pruned
+                                              :producer-node producer-node-pruned))
+
+               (and (sequential? result) (not (empty? result)))
+               (concat err (map
+                            #(assoc %
+                                    :consumer-node consumer-node-pruned
+                                    :producer-node producer-node-pruned)
+                            result))
+
+               :else err)))
          error
          rules)))))
 
